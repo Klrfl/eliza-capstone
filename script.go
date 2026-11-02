@@ -487,17 +487,21 @@ var script = []Rule{
 		},
 	},
 	{
-		Keyword:  "my",
+		// After preTransform, "my" has already been substituted to "your" in the
+		// input text, so this rule matches the transformed sentence. The full-
+		// sentence echo ("Your (2)") reproduces the original CACM paper behaviour
+		// where "my boyfriend made me come here" → "YOUR BOYFRIEND MADE YOU COME HERE".
+		Keyword:  "your",
 		Priority: 2,
 		Decomps: []Decomp{
 			{
-				Pattern: "* my *",
+				Pattern: "* your *",
 				Responses: []string{
+					"Your (2)?",
 					"Why are you concerned about your (2)?",
-					"What about your own (2)?",
 					"Does that have anything to do with the fact that your (2)?",
-					"Lets discuss further why your (2).",
-					"Earlier you said your (2).",
+					"Tell me more about your (2).",
+					"What about your own (2)?",
 				},
 			},
 		},

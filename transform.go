@@ -29,6 +29,38 @@ var reflections = map[string]string{
 	"yours":  "mine",
 }
 
+// preTransforms are word-for-word substitutions applied to the entire input
+// before keyword scanning, exactly as specified in the original DOCTOR script's
+// TRANSLATE table. This is what allows "my boyfriend" to become "your boyfriend"
+// so it can be echoed back naturally.
+var preTransforms = [][2]string{
+	{"don't", "do not"},
+	{"cant", "cannot"},
+	{"can't", "cannot"},
+	{"won't", "will not"},
+	{"wont", "will not"},
+	{"i'm", "i am"},
+	{"you're", "you are"},
+	{"i've", "i have"},
+	{"i'll", "i will"},
+	{"my", "your"},
+}
+
+// preTransform applies whole-word substitutions from the TRANSLATE table to
+// the normalized input text before keyword scanning begins.
+func preTransform(s string) string {
+	words := strings.Fields(s)
+	for i, w := range words {
+		for _, pair := range preTransforms {
+			if w == pair[0] {
+				words[i] = pair[1]
+				break
+			}
+		}
+	}
+	return strings.Join(words, " ")
+}
+
 // reflect applies pronoun reflection to a captured phrase so it reads
 // naturally when inserted into a response template.
 // e.g. "i am sad" → "you are sad"

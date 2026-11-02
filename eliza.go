@@ -32,7 +32,7 @@ func New() *ELIZA {
 
 // Respond generates ELIZA's reply to the given user input.
 func (e *ELIZA) Respond(input string) string {
-	text := normalize(input)
+	text := preTransform(normalize(input))
 
 	// Check for quit signal.
 	if text == "quit" || text == "bye" || text == "goodbye" || text == "exit" {

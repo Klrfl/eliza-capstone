@@ -276,21 +276,6 @@ var script = []Rule{
 		},
 	},
 	{
-		Keyword:  "your",
-		Priority: 0,
-		Decomps: []Decomp{
-			{
-				Pattern: "* your *",
-				Responses: []string{
-					"Why are you concerned over my (2)?",
-					"What about your own (2)?",
-					"Are you worried about someone else's (2)?",
-					"Really, my (2)?",
-				},
-			},
-		},
-	},
-	{
 		Keyword:  "was",
 		Priority: 2,
 		Decomps: []Decomp{
@@ -487,10 +472,10 @@ var script = []Rule{
 		},
 	},
 	{
-		// After preTransform, "my" has already been substituted to "your" in the
-		// input text, so this rule matches the transformed sentence. The full-
-		// sentence echo ("Your (2)") reproduces the original CACM paper behaviour
-		// where "my boyfriend made me come here" → "YOUR BOYFRIEND MADE YOU COME HERE".
+		// "your" fires both when the user writes "your" directly and when "my"
+		// has been pre-transformed to "your". The echo-back response "Your (2)?"
+		// reproduces the original CACM paper behaviour:
+		//   "my boyfriend made me come here" → "Your boyfriend made you come here?"
 		Keyword:  "your",
 		Priority: 2,
 		Decomps: []Decomp{
@@ -506,67 +491,145 @@ var script = []Rule{
 			},
 		},
 	},
+	// Each family keyword uses "* <keyword> *" so that the tail after the family
+	// member word is captured as (2) and can be reflected back, e.g.:
+	//   "my mother takes care of me"
+	//   preTransform → "your mother takes care of me"
+	//   capture (2)  → "takes care of you"  (after reflect)
+	//   response     → "Who else in your family takes care of you?"
 	{
 		Keyword:  "mother",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* mother *",
+				Responses: []string{
+					"Tell me more about your mother.",
+					"Who else in your family (2)?",
+					"Your mother.",
+					"What else comes to mind when you think of your mother?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "mom",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* mom *",
+				Responses: []string{
+					"Tell me more about your mother.",
+					"Who else in your family (2)?",
+					"Your mother.",
+					"What else comes to mind when you think of your mother?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "father",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* father *",
+				Responses: []string{
+					"Tell me more about your father.",
+					"Who else in your family (2)?",
+					"Your father.",
+					"What else comes to mind when you think of your father?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "dad",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* dad *",
+				Responses: []string{
+					"Tell me more about your father.",
+					"Who else in your family (2)?",
+					"Your father.",
+					"What else comes to mind when you think of your father?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "sister",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* sister *",
+				Responses: []string{
+					"Tell me more about your sister.",
+					"Who else in your family (2)?",
+					"Your sister.",
+					"What else comes to mind when you think of your sister?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "brother",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* brother *",
+				Responses: []string{
+					"Tell me more about your brother.",
+					"Who else in your family (2)?",
+					"Your brother.",
+					"What else comes to mind when you think of your brother?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "wife",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* wife *",
+				Responses: []string{
+					"Tell me more about your wife.",
+					"Who else in your family (2)?",
+					"Your wife.",
+					"What else comes to mind when you think of your wife?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "husband",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* husband *",
+				Responses: []string{
+					"Tell me more about your husband.",
+					"Who else in your family (2)?",
+					"Your husband.",
+					"What else comes to mind when you think of your husband?",
+				},
+			},
 		},
 	},
 	{
 		Keyword:  "children",
 		Priority: 100,
 		Decomps: []Decomp{
-			{Pattern: "*", Responses: []string{"=family"}},
+			{
+				Pattern: "* children *",
+				Responses: []string{
+					"Tell me more about your children.",
+					"Who else in your family (2)?",
+					"Your children.",
+					"What else comes to mind when you think of your children?",
+				},
+			},
 		},
 	},
 	{
@@ -574,10 +637,18 @@ var script = []Rule{
 		Priority: 100,
 		Decomps: []Decomp{
 			{
-				Pattern: "*",
+				Pattern: "* family *",
 				Responses: []string{
 					"Tell me more about your family.",
 					"Who else in your family (2)?",
+					"Your family.",
+					"What else comes to mind when you think of your family?",
+				},
+			},
+			{
+				Pattern: "*",
+				Responses: []string{
+					"Tell me more about your family.",
 					"Your family.",
 					"What else comes to mind when you think of your family?",
 				},

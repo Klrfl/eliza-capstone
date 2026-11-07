@@ -51,22 +51,33 @@ func TestConversations(t *testing.T) {
 		},
 		{
 			// "do not" is the pre-transformed form; "* i *" catches "i do not know..."
+			// Fresh instance: "* i *" index 0 → "You say you (2)?"
 			name: "i don't contraction",
 			exchanges: []exchange{
-				{"I don't know what to do", "Can you elaborate on that?"},
+				{"I don't know what to do", "You say you do not know what to do?"},
 			},
 		},
 		{
 			// "i am" is the pre-transformed form; "* i am *" decomp fires.
+			// Fresh instance: "* i am *" index 0 → "Did you come to me because you are (2)?"
 			name: "i'm contraction",
 			exchanges: []exchange{
-				{"I'm feeling lost", "How long have you been feeling lost?"},
+				{"I'm feeling lost", "Did you come to me because you are feeling lost?"},
 			},
 		},
 		{
-			name: "family - mother",
+			name: "family - mother generic",
 			exchanges: []exchange{
-				{"My mother never listened to me", "Tell me more about your family."},
+				{"My mother never listened to me", "Tell me more about your mother."},
+			},
+		},
+		{
+			name: "family - mother with tail capture",
+			exchanges: []exchange{
+				// First call → index 0: "Tell me more about your mother."
+				// Second call → index 1: "Who else in your family (2)?" with reflected tail.
+				{"My mother takes care of me", "Tell me more about your mother."},
+				{"My mother takes care of me", "Who else in your family takes care of you?"},
 			},
 		},
 		{
@@ -100,11 +111,12 @@ func TestConversations(t *testing.T) {
 			},
 		},
 		{
-			// "i" (priority 0) outranks "because" (priority 0) but appears later
-			// in the script scan; actual winner is "i" via "* i *".
+			// "i" (priority 0) and "because" (priority 0) tie; "i" wins because it
+			// appears later in the script and overwrites best in the scan.
+			// Fresh instance: "* i *" index 0 → "You say you (2)?"
 			name: "because with i",
 			exchanges: []exchange{
-				{"Because I said so", "Do you say you said so for some special reason?"},
+				{"Because I said so", "You say you said so?"},
 			},
 		},
 		{
@@ -118,19 +130,17 @@ func TestConversations(t *testing.T) {
 			// second call gives response[1].
 			name: "round-robin cycles responses",
 			exchanges: []exchange{
+				{"perhaps", "You don't seem quite certain."},
 				{"perhaps", "Why the uncertain tone?"},
-				{"perhaps", "Can't you be more positive?"},
 			},
 		},
 		{
 			name: "multi-turn: i am then family",
 			exchanges: []exchange{
-				// "i am" decomp cycles — second response on a fresh ELIZA instance.
-				{"I am feeling anxious", "Do you believe it is normal to be feeling anxious?"},
-				// "father" (priority 100) wins, redirects to =family.
-				// The family rule's round-robin index is already at 1 (shared via ruleMap)
-				// so the second family response fires.
-				{"My father was strict", "Who else in your family?"},
+				// Fresh instance: "* i am *" index 0.
+				{"I am feeling anxious", "Did you come to me because you are feeling anxious?"},
+				// "father" keyword (priority 100), pattern "* father *", index 0.
+				{"My father was strict", "Tell me more about your father."},
 			},
 		},
 	}

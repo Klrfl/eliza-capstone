@@ -8,23 +8,41 @@ import (
 
 // ELIZA is the stateful conversation engine.
 type ELIZA struct {
-	rules    []Rule          // script rules, keyed by keyword
-	ruleMap  map[string]*Rule // fast lookup by keyword
+	rules   []*Rule          // owned copies of script rules
+	ruleMap map[string]*Rule // fast lookup by keyword
 }
 
 // New builds an ELIZA instance from the bundled script.
-// Duplicate keyword entries are merged so later Decomps are appended.
+// Each call allocates independent copies of every Rule and Decomp so that
+// round-robin indices are private to this instance. Multiple instances and
+// test cases never share state.
+// Duplicate keyword entries in the script are merged in order.
 func New() *ELIZA {
 	e := &ELIZA{
 		ruleMap: make(map[string]*Rule),
 	}
-	for i := range script {
-		r := &script[i]
+	for _, src := range script {
+		// Deep-copy the Rule onto the heap so appending to e.rules never
+		// invalidates the pointers stored in ruleMap.
+		r := &Rule{
+			Keyword:  src.Keyword,
+			Priority: src.Priority,
+			Decomps:  make([]Decomp, len(src.Decomps)),
+		}
+		for i, d := range src.Decomps {
+			responses := make([]string, len(d.Responses))
+			copy(responses, d.Responses)
+			r.Decomps[i] = Decomp{
+				Pattern:   d.Pattern,
+				Responses: responses,
+				index:     0,
+			}
+		}
 		if existing, ok := e.ruleMap[r.Keyword]; ok {
 			existing.Decomps = append(existing.Decomps, r.Decomps...)
 		} else {
+			e.rules = append(e.rules, r)
 			e.ruleMap[r.Keyword] = r
-			e.rules = append(e.rules, *r)
 		}
 	}
 	return e
@@ -41,8 +59,7 @@ func (e *ELIZA) Respond(input string) string {
 
 	// Find the highest-priority rule whose keyword appears in the input.
 	var best *Rule
-	for i := range script {
-		r := &script[i]
+	for _, r := range e.rules {
 		if r.Keyword == "xnone" {
 			continue
 		}
